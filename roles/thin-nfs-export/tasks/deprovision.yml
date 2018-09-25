@@ -1,0 +1,35 @@
+---
+- name: check for export
+  stat: 
+    path: /etc/exports.d/{{ pvol_name }}.exports
+  register: _exported
+
+- name: remove exports entry
+  file:
+    path: /etc/exports/d/{{ pvol_name }}.exports
+    follow: no
+    state: absent
+  when: _exported.stat.exists
+  notify: reload_nfs
+
+- meta: flush_handlers
+
+- name: release locks pause
+  pause:
+    seconds: 30
+
+- name: unmount volume
+  mount:
+    path: "{{ backup_storage_nfs_root }}/{{ pvol_name }}"
+    src: "/dev/{{ lvm_thinpool.volume_group }}/{{ pvol_name }}"
+    state: absent
+  register: _mount_volume
+
+- name: remove thin-lv from pool
+  lvol:
+    vg: "{{ lvm_thinpool.volume_group }}"
+    lv: "{{ pvol_name }}"
+    force: yes
+    state: absent
+
+...

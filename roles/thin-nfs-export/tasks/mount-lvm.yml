@@ -1,0 +1,39 @@
+---
+# Add new lvm to fstab and mount
+- name: Check mount root
+  file:
+    path: "{{ backup_storage_nfs_root }}"
+    state: directory
+
+- name: Check mount
+  stat:
+    path: "{{ backup_storage_nfs_root }}/{{ pvol_name }}"
+  register: _lvm_mount_path
+
+- name: Create lvm mount
+  file:
+    path: "{{ backup_storage_nfs_root }}/{{ pvol_name }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0750
+  when: not _lvm_mount_path.stat.exists
+
+- name: Mount volume
+  mount:
+    name: "{{ backup_storage_nfs_root }}/{{ pvol_name }}"
+    src: "/dev/{{ lvm_thinpool.volume_group }}/{{ pvol_name }}"
+    fstype: "{{ lvm_thinpool.filesystem | default('xfs') }}"
+    state: mounted
+    opts: "{{ lvm_thinpool.mount_options | default('defaults') }}"
+  register: _mount_volume
+
+- name: Ensure mount paths permissions
+  file:
+    path: "{{ backup_storage_nfs_root }}/{{ pvol_name }}"
+    state: directory
+    owner: "{{ rq_owner | default ('nfsnobody') }}"
+    group: "{{ rq_group | default ('nfsnobody') }}"
+    mode: "{{ rq_fsmode | default ('0770') }}"
+  when: not _mount_volume.failed
+

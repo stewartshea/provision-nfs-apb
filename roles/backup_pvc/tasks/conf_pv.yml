@@ -1,0 +1,28 @@
+---
+- name: "[backup-pvc] Configure PV"
+  k8s_raw:
+    kubeconfig: '{{ storage_admin_kubeconf }}'
+    context: /kubernetes/storage-admin
+    state: '{{ state }}'
+#    definition: "{{ lookup('template', '/testing/deployment.yml') | from_yaml }}"
+    definition:
+      apiVersion: v1
+      kind: PersistentVolume
+      metadata:
+        name: "{{ pvol_name }}"
+        labels:
+          svc_instance: "{{ _apb_service_instance_id }}"
+      spec:
+        capacity:
+          storage: "{{ pvol_size }}"
+        accessModes:
+          - ReadWriteMany
+        nfs:
+          path: "{{ backup_storage_nfs_root }}/{{ pvol_name }}"
+          server: "{{ backup_storage_nfs_server }}"
+        persistentVolumeReclaimPolicy: Retain
+        claimRef:
+          name: "bk-{{ pvol_name }}"
+          namespace: "{{ namespace }}"
+
+...

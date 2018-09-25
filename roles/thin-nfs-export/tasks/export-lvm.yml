@@ -1,0 +1,20 @@
+---
+# Manage export checks and nfs reloads
+- name: Verify export directory
+  stat: 
+    path: "{{ backup_storage_nfs_root }}/{{ pvol_name }}"
+  register: _exportTarget
+
+- name: create exports file
+  template:
+    src: project-export.j2
+    dest: "/etc/exports.d/{{ pvol_name }}.exports"
+    force: no
+    owner: root
+    group: root
+    mode: 0644
+  when: _exportTarget.stat.exists
+  register: _exported
+  notify: reload_nfs
+
+- meta: flush_handlers

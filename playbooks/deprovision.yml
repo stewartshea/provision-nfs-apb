@@ -1,0 +1,106 @@
+- name: backup-pvc playbook to deprovision the application
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  roles:
+  - role: ansible.kubernetes-modules
+    install_python_requirements: no
+  - role: ansibleplaybookbundle.asb-modules
+  tasks:
+  - name: "[Deprovision] get storage name"
+    shell: oc get pvc -l=svc_instance={{ _apb_service_instance_id }} -o=yaml -n {{ namespace }} | grep volumeName | awk '{print $2}'
+    register: _get_pvc
+    changed_when: false
+    ignore_errors: true
+
+  - name: "[Deprovision] Set volume"
+    set_fact:
+      pvol_name: "{{ _get_pvc.stdout }}"
+      pvol_size: "{{ rq_size }}"
+      mode: 'deprovision'
+      secret_mnt: "/etc/apb-secrets/apb-backup-nfs-conf"
+
+  - name: "[Deprovision] update secrets"
+    set_fact:
+      backup_storage_nfs_server: "{{ lookup('file', '{{ secret_mnt }}/backup_storage_nfs_server') | regex_replace('^\"|\"$') }}"
+      backup_storage_nfs_root: "{{ lookup('file', '{{ secret_mnt }}/backup_storage_nfs_root')  | regex_replace('^\"|\"$') }}"
+      backup_storage_volumegroup: "{{ lookup('file', '{{ secret_mnt }}/backup_storage_volumegroup')  | regex_replace('^\"|\"$') }}"
+      backup_storage_thinpool: "{{ lookup('file', '{{ secret_mnt }}/backup_storage_thinpool')  | regex_replace('^\"|\"$') }}"
+      remote_user: "{{ lookup('file', '{{ secret_mnt }}/remote_user')  | regex_replace('^\"|\"$') }}"
+      pv_srv_acct: "{{ lookup('file', '{{ secret_mnt }}/pv_srv_acct')  | regex_replace('^\"|\"$') }}"
+      pv_srv_acct_token: "{{ lookup('file', '{{ secret_mnt }}/pv_srv_acct_token')  | regex_replace('^\"|\"$') }}"
+
+  - name: "[Deprovision] PREP"
+    debug:
+      msg:
+        - "Unique vars:"
+        - "  serviceInstance-ID        : {{ _apb_service_instance_id }}"
+        - "  pvol_name                 : {{ pvol_name }}"
+        - "  pvol_size                 : {{ pvol_size }}"
+        - "  backup_storage_nfs_server : {{ backup_storage_nfs_server }}"
+        - "  backup_storage_nfs_root   : {{ backup_storage_nfs_root }}"
+        - "  backup_storage_volumegroup: {{ backup_storage_volumegroup }}"
+        - "  backup_storage_thinpool   : {{ backup_storage_thinpool }}"
+        - "  remote_user               : {{ remote_user }}"
+        - "  Mode                      : {{ mode }}"
+        - "  State                     : {{ state | default('undefined') }}"
+
+  - name: Adding remote host to inventory
+    add_host:
+      name: "{{ backup_storage_nfs_server }}"
+      groups: nfs_server
+    changed_when: false
+
+  - name: Adding ssh dir
+    file:
+      path: /opt/apb/.ssh
+      state: directory
+      mode: 0700
+
+  - name: Check for sshauth secret
+    stat:
+      path: "{{ secret_mnt }}/auth_key"
+    register: _sshkey_secret
+
+  - name: copy ssh private key
+    copy:
+      dest: /opt/apb/.ssh/id_rsa
+      content: "{{ lookup('file', '{{ secret_mnt }}/auth_key') | regex_replace('^\"|\"$') }}"
+      mode: 0600
+    when: _sshkey_secret.stat.exists
+
+
+- name: "[Deprovision] OC Objects"
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  vars:
+    state: 'absent'
+    mode: 'deprovision'
+  roles:
+  - role: ansible.kubernetes-modules
+    install_python_requirements: no
+  - role: ansibleplaybookbundle.asb-modules
+  - role: backup_pvc
+    playbook_debug: true
+
+
+- name: "[Deprovision] Remote Objects"
+  hosts: nfs_server
+  remote_user: "{{ hostvars['localhost']['remote_user'] }}"
+  become: true
+  pre_tasks:
+  - name: Carry over vars from initial play
+    set_fact:
+      mode: 'deprovision'
+      state: 'absent'
+      pvol_name: "{{ hostvars['localhost']['pvol_name'] }}"
+      pvol_size: "{{ hostvars['localhost']['pvol_size'] }}"
+      backup_storage_nfs_server: "{{ hostvars['localhost']['backup_storage_nfs_server'] }}"
+      backup_storage_nfs_root: "{{ hostvars['localhost']['backup_storage_nfs_root'] }}"
+      backup_storage_volumegroup: "{{ hostvars['localhost']['backup_storage_volumegroup'] }}"
+      backup_storage_thinpool: "{{ hostvars['localhost']['backup_storage_thinpool'] }}"
+  roles:
+  - role: thin-nfs-export
+
+...

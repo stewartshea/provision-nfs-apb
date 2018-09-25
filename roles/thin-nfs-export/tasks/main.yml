@@ -1,0 +1,8 @@
+---
+- name: Provisioning action
+  include: provision.yml
+  when: mode == 'provision'
+
+- name: Deprovisioning action
+  include: deprovision.yml
+  when: mode == 'deprovision'

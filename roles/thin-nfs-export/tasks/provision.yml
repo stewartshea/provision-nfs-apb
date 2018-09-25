@@ -1,0 +1,11 @@
+---
+- name: Provision thin lvm
+  include: create-thin-lvm.yml
+
+- name: Mount lvm
+  include: mount-lvm.yml
+
+- name: Export lvm
+  include: export-lvm.yml
+
+...

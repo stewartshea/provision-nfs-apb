@@ -1,0 +1,21 @@
+---
+- name: "[backup_pvc] Configure PVC"
+  k8s_raw:
+    state: '{{ state }}'
+    definition:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: "bk-{{ pvol_name }}"
+        namespace: "{{ namespace }}"
+        labels:
+          svc_instance: "{{ _apb_service_instance_id }}"
+      spec:
+        accessModes:
+          - ReadWriteMany
+        resources:
+          requests:
+            storage: "{{ pvol_size }}"
+        volumeName: "{{ pvol_name }}"
+
+...

@@ -1,0 +1,11 @@
+---
+# Inventory for nfs server can override for changes to LVM configuration
+# Careful though: this role is currently creating the thinpool, but that should
+# be stripped and set as a pre-requisite instead
+lvm_thinpool:
+  name: "{{ backup_storage_thinpool }}"
+  volume_group: "{{ backup_storage_volumegroup }}"
+  physical_volumes:
+    - /dev/sdb
+  filesystem: xfs
+  filesystem_mkfs_opts: "-n ftype=1"

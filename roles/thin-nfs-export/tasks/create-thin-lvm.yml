@@ -1,0 +1,19 @@
+---
+- name: Create ThinPool volume
+# shell command in case backward compatibility to ansible 2.4 is needed
+#  shell: 'lvcreate -V{{ nfs_pv_size }} -T {{ lvm_thinpool.volume_group }}/{{ lvm_thinpool.name }} -n {{ rq_pname }}_{{ storage_UID }}'
+  lvol:
+    vg: "{{ lvm_thinpool.volume_group }}"
+    lv: "{{ pvol_name }}"
+    size: "{{ pvol_size }}G"
+    state: present
+    thinpool: "{{ lvm_thinpool.name }}"
+  register: _thinvolume_created
+
+- name: Format volume
+  filesystem:
+    fstype: "{{ lvm_thinpool.filesystem | default('xfs') }}"
+    opts: "{{ lvm_thinpool.filesystem_mkfs_opts | default(omit) }}"
+    dev: "/dev/{{ lvm_thinpool.volume_group }}/{{ pvol_name }}"
+  when: _thinvolume_created.changed
+

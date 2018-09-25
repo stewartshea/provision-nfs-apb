@@ -1,0 +1,99 @@
+---
+- name: Prep for Remote Provision
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  tasks:
+  - name: Create unique storage ID
+    set_fact:
+      storage_ID: "{{ lookup('password', '/dev/null length=12 chars=ascii_lowercase,digits') }}"
+      secret_mnt: "/etc/apb-secrets/apb-backup-nfs-conf"
+      mode: provision
+
+  # main tasks file for thin-lvm nfs provision
+  - name: set variables for provision
+    set_fact:
+      pvol_name: "{{ namespace }}-{{ storage_ID }}"
+      pvol_size: "{{ rq_size }}"
+      backup_storage_nfs_server: "{{ lookup('file', '{{ secret_mnt }}/backup_storage_nfs_server') | regex_replace('^\"|\"$') }}"
+      backup_storage_nfs_root: "{{ lookup('file', '{{ secret_mnt }}/backup_storage_nfs_root')  | regex_replace('^\"|\"$') }}"
+      backup_storage_volumegroup: "{{ lookup('file', '{{ secret_mnt }}/backup_storage_volumegroup')  | regex_replace('^\"|\"$') }}"
+      backup_storage_thinpool: "{{ lookup('file', '{{ secret_mnt }}/backup_storage_thinpool')  | regex_replace('^\"|\"$') }}"
+      remote_user: "{{ lookup('file', '{{ secret_mnt }}/remote_user')  | regex_replace('^\"|\"$') }}"
+      pv_srv_acct: "{{ lookup('file', '{{ secret_mnt }}/pv_srv_acct')  | regex_replace('^\"|\"$') }}"
+      pv_srv_acct_token: "{{ lookup('file', '{{ secret_mnt }}/pv_srv_acct_token')  | regex_replace('^\"|\"$') }}"
+
+  - name: "[backup-pvc-apb] PREP"
+    debug:
+      msg:
+        - "Preparation:"
+        - "  pvol_name: {{ pvol_name }}"
+        - "  pvol_size: {{ pvol_size }}"
+        - "  backup_storage_nfs_server: {{ backup_storage_nfs_server }}"
+        - "  backup_storage_nfs_root: {{ backup_storage_nfs_root }}"
+        - "  backup_storage_volumegroup: {{ backup_storage_volumegroup }}"
+        - "  backup_storage_thinpool: {{ backup_storage_thinpool }}"
+        - "  remote_user: {{ remote_user }}"
+        - "  Mode: {{ mode }}"
+        - "  State: {{ state | default('undefined') }}"
+        - "  Plan: {{ _apb_plan_id }}"
+
+
+  - name: Adding remote host to inventory
+    add_host:
+      name: "{{ backup_storage_nfs_server }}"
+      groups: nfs_server
+    changed_when: false
+
+  - name: Adding ssh dir
+    file:
+      path: /opt/apb/.ssh
+      state: directory
+      mode: 0700
+
+  - name: Check for sshauth secret
+    stat:
+      path: /etc/apb-secrets/apb-backup-nfs-conf/auth_key
+    register: _sshkey_secret
+
+  - name: copy ssh private key
+    copy:
+      dest: /opt/apb/.ssh/id_rsa
+      content: "{{ lookup('file', '/etc/apb-secrets/apb-backup-nfs-conf/auth_key') | regex_replace('^\"|\"$') }}"
+      mode: 0600
+    when: _sshkey_secret.stat.exists
+
+
+- name: Provision NFS
+  hosts: nfs_server
+  remote_user: "{{ hostvars['localhost']['remote_user'] }}"
+  become: true
+  pre_tasks:
+  - name: Carry over vars from initial play
+    set_fact:
+      mode: provision
+      pvol_name: "{{ hostvars['localhost']['pvol_name'] }}"
+      pvol_size: "{{ hostvars['localhost']['pvol_size'] }}"
+      backup_storage_nfs_server: "{{ hostvars['localhost']['backup_storage_nfs_server'] }}"
+      backup_storage_nfs_root: "{{ hostvars['localhost']['backup_storage_nfs_root'] }}"
+      backup_storage_volumegroup: "{{ hostvars['localhost']['backup_storage_volumegroup'] }}"
+      backup_storage_thinpool: "{{ hostvars['localhost']['backup_storage_thinpool'] }}"
+  roles:
+  - role: thin-nfs-export
+
+
+- name: Provision PV-PVC
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  vars:
+    state: 'present'
+    mode: 'provision'
+  roles:
+  - role: ansible.kubernetes-modules
+    install_python_requirements: no
+  - role: ansibleplaybookbundle.asb-modules
+  - role: backup_pvc
+    playbook_debug: true
+
+...
