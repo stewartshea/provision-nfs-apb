@@ -1,13 +1,13 @@
 version: 1.0
 name: backup-pvc-apb
-description: This APB will create and deploy an NFS backed PV and a corresponding project PVC.
+description: Provision an NFS PVC backed by a thin provisioned volume.
 bindable: False
 async: optional
 metadata:
-  displayName: Backup PVC (APB)
+  displayName: BC Gov NFS Storage
   imageUrl: https://haaaad.gallerycdn.vsassets.io/extensions/haaaad/ansible/0.2.8/1523004165739/Microsoft.VisualStudio.Services.Icons.Default
   longDescription:
-    An APB which deploys a new NFS backed PV and PVC for a project.
+    Non-redundant storage that is backed up using the BC Gov enterprise backup system.  Not meant to run live applications due to performance and reliability constraints.
   providerDisplayName: "Arctiq"
 plans:
   - name: default

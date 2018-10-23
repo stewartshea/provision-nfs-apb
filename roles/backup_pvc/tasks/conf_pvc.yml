@@ -15,7 +15,7 @@
           - ReadWriteMany
         resources:
           requests:
-            storage: "{{ pvol_size }}"
+            storage: "{{ pvol_size }}{{ storage_unit_type }}"
         volumeName: "{{ pvol_name }}"
 
 ...

@@ -5,7 +5,7 @@
   lvol:
     vg: "{{ lvm_thinpool.volume_group }}"
     lv: "{{ pvol_name }}"
-    size: "{{ pvol_size }}G"
+    size: "{{ pvol_size }}{{ lvm_thinpool.unit_type }}"
     state: present
     thinpool: "{{ lvm_thinpool.name }}"
   register: _thinvolume_created

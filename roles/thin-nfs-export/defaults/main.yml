@@ -9,3 +9,4 @@ lvm_thinpool:
     - /dev/sdb
   filesystem: xfs
   filesystem_mkfs_opts: "-n ftype=1"
+  unit_type: "G"

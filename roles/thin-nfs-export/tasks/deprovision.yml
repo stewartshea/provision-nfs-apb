@@ -1,22 +1,20 @@
 ---
-- name: check for export
-  stat: 
-    path: /etc/exports.d/{{ pvol_name }}.exports
-  register: _exported
-
-- name: remove exports entry
+- name: Remove exports entry
   file:
-    path: /etc/exports/d/{{ pvol_name }}.exports
+    path: /etc/exports.d/{{ pvol_name }}.exports
     follow: no
     state: absent
-  when: _exported.stat.exists
-  notify: reload_nfs
 
-- meta: flush_handlers
+- name: Check exportfs for pvol_name
+  shell: "/sbin/exportfs -s | grep {{ pvol_name }}"
+  changed_when: false
+  ignore_errors: true
+  register: _pvol_in_exportfs
 
-- name: release locks pause
-  pause:
-    seconds: 30
+- name: Remove pvol_name from exportfs
+  shell: "/sbin/exportfs -u *:{{ backup_storage_nfs_root }}/{{ pvol_name }}"
+  when: _pvol_in_exportfs.rc == 0
+  register: _exportfs_unshare
 
 - name: unmount volume
   mount:

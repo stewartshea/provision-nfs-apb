@@ -1,7 +1,7 @@
 ---
 # Manage export checks and nfs reloads
 - name: Verify export directory
-  stat: 
+  stat:
     path: "{{ backup_storage_nfs_root }}/{{ pvol_name }}"
   register: _exportTarget
 

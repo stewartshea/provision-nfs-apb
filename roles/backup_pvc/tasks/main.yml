@@ -2,10 +2,9 @@
 - name: "[backup-pvc] PVC debug"
   debug:
     msg:
-      - "Entering PVC creation:"
+      - "Manage PVC:"
       - "  Mode: {{ mode }}"
       - "  State: {{ state | default('undefined') }}"
-      - "  Plan: {{ _apb_plan_id }}"
 
 - name: "[backup-pvc] prep kubeconfig"
   template:
@@ -20,7 +19,7 @@
 
   - name: "[backup-pv] Provision PVC"
     include_tasks: conf_pvc.yml
-  when: mode == 'provision' and _kubeconf_storageadmin.changed
+  when: mode == 'provision'
 
 - block:
   - name: "[backup-pvc] Deprovision PVC"
@@ -28,4 +27,4 @@
 
   - name: "[backup-pvc] Deprovision PV"
     include_tasks: conf_pv.yml
-  when: mode == 'deprovision' and _kubeconf_storageadmin.changed
+  when: mode == 'deprovision'

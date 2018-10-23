@@ -4,7 +4,6 @@
     kubeconfig: '{{ storage_admin_kubeconf }}'
     context: /kubernetes/storage-admin
     state: '{{ state }}'
-#    definition: "{{ lookup('template', '/testing/deployment.yml') | from_yaml }}"
     definition:
       apiVersion: v1
       kind: PersistentVolume
@@ -14,7 +13,7 @@
           svc_instance: "{{ _apb_service_instance_id }}"
       spec:
         capacity:
-          storage: "{{ pvol_size }}"
+          storage: "{{ pvol_size }}{{ storage_unit_type }}"
         accessModes:
           - ReadWriteMany
         nfs:
