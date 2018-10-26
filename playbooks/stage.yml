@@ -1,0 +1,51 @@
+##################################################################################
+# Stage facts and remote connection access.
+#
+- name: "[Stage] set facts for provision"
+  set_fact:
+    pvol_name: "{{ namespace }}-{{ storage_UID }}"
+    pvol_size: "{{ rq_size }}"
+    backup_storage_nfs_server: "{{ lookup('file', '{{ secret_mnt }}/backup_storage_nfs_server') | regex_replace('^\"|\"$') }}"
+    backup_storage_nfs_root: "{{ lookup('file', '{{ secret_mnt }}/backup_storage_nfs_root')  | regex_replace('^\"|\"$') }}"
+    backup_storage_volumegroup: "{{ lookup('file', '{{ secret_mnt }}/backup_storage_volumegroup')  | regex_replace('^\"|\"$') }}"
+    backup_storage_thinpool: "{{ lookup('file', '{{ secret_mnt }}/backup_storage_thinpool')  | regex_replace('^\"|\"$') }}"
+    remote_user: "{{ lookup('file', '{{ secret_mnt }}/remote_user')  | regex_replace('^\"|\"$') }}"
+    pv_srv_acct: "{{ lookup('file', '{{ secret_mnt }}/pv_srv_acct')  | regex_replace('^\"|\"$') }}"
+    pv_srv_acct_token: "{{ lookup('file', '{{ secret_mnt }}/pv_srv_acct_token')  | regex_replace('^\"|\"$') }}"
+
+- name: "[Stage] Facts Set Debug"
+  debug:
+    msg:
+      - "Preparation:"
+      - "  pvol_name: {{ pvol_name }}"
+      - "  pvol_size: {{ pvol_size }}"
+      - "  backup_storage_nfs_server: {{ backup_storage_nfs_server }}"
+      - "  backup_storage_nfs_root: {{ backup_storage_nfs_root }}"
+      - "  backup_storage_volumegroup: {{ backup_storage_volumegroup }}"
+      - "  backup_storage_thinpool: {{ backup_storage_thinpool }}"
+      - "  remote_user: {{ remote_user }}"
+
+# Configure for remote NFS host access
+- name: "[Stage] Adding remote host to inventory"
+  add_host:
+    name: "{{ backup_storage_nfs_server }}"
+    groups: nfs_server
+  changed_when: false
+
+- name: "[Stage] Adding ssh dir"
+  file:
+    path: /opt/apb/.ssh
+    state: directory
+    mode: 0700
+
+- name: "[Stage] Check for sshauth secret"
+  stat:
+    path: "{{ secret_mnt }}/auth_key"
+  register: _sshkey_secret
+
+- name: "[Stage] copy ssh private key"
+  copy:
+    dest: /opt/apb/.ssh/id_rsa
+    content: "{{ lookup('file', '{{ secret_mnt }}/auth_key') | regex_replace('^\"|\"$') }}"
+    mode: 0600
+  when: _sshkey_secret.stat.exists

@@ -1,93 +1,75 @@
-# Provision backup (NFS) PVC for project (backup-pvc-apb)
+# Provision NFS PVC for a namespace (backup-pvc-apb)
 
-## Provision Needs
+Welcome to the NFS Provision workspace.  This apb is designed to fully provision an external (to cluster) nfs share along with the cluster objects (pv/pvc) into a cluster namespace.
 
-1. Create remote nfs shared lv (thin volume)
-2. Create PV and PVC in target namespace for created nfs share.
+## How to Use
 
-## Deprovision Needs
-
-1. Delete PVC and reclaim/delete PV (do not keep)
-2. Remove NFS Share and volume (avoid orphans)
-
-## TBD
-
-1. do not automatically delete nfs pv and contents?
-2. check quota before provisioning?
-
-## Deployment Steps
-
-### Build/Push APB Image to openshift project
-
-Local package requirements: oc client, apb cli, local docker
-
-`oc login` (user needs edit/admin permissions within 'openshift' and 'openshift-ansible-service-broker' namespaces)
-
-`oc get route docker-registry -n default`
-
-`export OSC_DOCKER_REG=docker-registry.lab.pathfinder.gov.bc.ca`
-
-confirm /etc/containers/registries.conf has insecure route (if needed)
-
-- add to [registries.insecure] section:
-  `registries = [${OSC_DOCKER_REG}]`
-
-This apb was created with "apb init", and can be pushed via the following (in the top folder):
+### Provision via `svcat cli`
 
 ``` bash
-apb prepare
-apb build --tag ${OSC_DOCKER_REG}/openshift/backup-pvc-apb
-apb push --registry-route ${OSC_DOCKER_REG}
-
-# Verify apb (note: svcat may take up to 10 minutes to show up due to catalog refresh timer):
-oc get images -n openshift | grep backup-pvc-apb
-svcat sync broker ansible-service-broker
-svcat get plans | grep backup-pvc
+> svcat provision [service-instance-name] --class localregistry-backup-pvc-apb --plan default --params-json '{"rq_size":[size-in-Gb]}' -n [project-namespace]
 ```
 
-### Update openshift-ansible-service-broker
-
-Create service account with cluster storage admin role.
+### View catalog item details
 
 ``` bash
-oc create sa {PVServiceAcctName} -n openshift-ansible-service-broker
-oc adm policy add-cluster-role-to-user system:controller:persistent-volume-binder system:serviceaccount:openshift-ansible-service-broker:{PVServiceAcctName}
+> svcat describe plan localregistry-backup-pvc-apb/default
+  Name:          default
+  Description:   Provision an NFS backed PVC for the target project.  
+  UUID:          5131dda39f778c1a979b9b9a2effbd15
+  Status:        Active
+  Free:          true
+  Class:         localregistry-backup-pvc-apb
+
+Instances:
+                 NAME                  NAMESPACE   STATUS  
++------------------------------------+-----------+--------+
+  localregistry-backup-pvc-apb-5lr9j   jeff-test   Ready
+
+Instance Create Parameter Schema:
+  $schema: http://json-schema.org/draft-04/schema
+  additionalProperties: false
+  properties:
+    rq_size:
+      default: 1
+      title: Backup Volume Size (Gb)
+      type: number
+  required:
+  - rq_size
+  type: object
+
+Instance Update Parameter Schema:
+  $schema: http://json-schema.org/draft-04/schema
+  additionalProperties: false
+  type: object
+
+Binding Create Parameter Schema:
+  $schema: http://json-schema.org/draft-04/schema
+  additionalProperties: false
+  type: object
 ```
 
-Ensure service account created on NFS host with SSH Key access and passwordless sudo for ansible automation.
+### Provision via GUI catalog
 
-Add an opaque secret using the parameter-secret.json.sample as a template.
+Simply click on the "BC Gov NFS Storage" catalog item and ensure parameters are entered as needed.  You cannot specify the name of the serviceInstance when provisioning through the GUI, one will be generated for you.
 
-create secret with : `oc create -f parameter-secret.json`
-(it will base64 encode items listed in "stringData" section, or if you have base64 encoded values, put them in a data section instead)
+## Verify your PVC
 
-``` json
-apiVersion: v1
-kind: Secret
-metadata:
-    name: {bkup-nfs-param secret name}
-    namespace: openshift-ansible-service-broker
-stringData:
-    "backup_storage_nfs_server": {nfshost.domain.name}
-    "backup_storage_nfs_root": {/path/to/nfs/export/root}
-    "backup_storage_volumegroup": {LVG name}
-    "backup_storage_thinpool": {lv thinpool name}
-    "remote_user": {remote nfs host user}
-    "auth_key": {sshkey auth for remote_user}
-    "pv_srv_acct": {PVServiceAcctName}
-    "pv_srv_acct_token": {Auth Token for PVServiceAcctName}
+```bash
+oc -n [project-namespace] get pvc
+oc -n [project-namespace] get serviceInstance
 ```
 
-Update cm/broker-config with the following changes:
+You can tell which PVC is associated with the serviceInstance as the serviceInstance name is included in the PVC name.
 
-``` yaml
-Add section:
-  secrets:
-  - title: backup-nfs-auth
-    apb_name: localregistry-backup-pvc-apb
-    secret: {bkup-nfs-param secret name}
-```
+## Removing your PVC
 
-Redeploy openshift-ansible-service-broker to use new cm/broker-config
+1. Ensure PVC is not mounted in any pods
+2. Delete ServiceInstance that was provisioned
 
-Test creating serviceInstance. (Should only see project and size as parameters)
+`Due to a current issue with the Automation-Broker, please inform ocp-lab-ops slack channel ASAP (@jefkel) of errors during a deprovision.  (include project name and ServiceInstance name in the slack message)`
+
+## Other Documentation
+
+- Deployment(docs/Deployment.md)
+- Secrets(docs/Secrets.md)

@@ -18,42 +18,6 @@
   - name: Label serviceInstance with storage_UID
     shell: oc -n "{{ namespace }}" label serviceInstance "{{ _svcInstanceName.stdout }}" storage_UID="{{ storage_UID }}"
 
-  # Update the parameters secret that is associated with this service instance.
-  # - add the generated {{ storage_UID }} for deprovision/updates
-  # Currently using some jq jitsu, but could use a better option for the Update task
-  # than an oc get and replace.
-#  - name: Get Parameter Secret Name for current serviceInstance
-#    shell: oc -n "{{ namespace }}" get serviceinstance -o json | jq -r '.items[] | select(.spec.externalID == "{{ _apb_service_instance_id }}") | .spec.parametersFrom[] | select(.secretKeyRef.key == "parameters") | .secretKeyRef.name'
-#    register: _parameterSecretName
-#    failed_when: _parameterSecretName.svc_instance
-#    changed_when: false
-
-#  - name: get current secret value
-#    shell: oc -n "{{ namespace }}" gesvc_instanceetName.stdout }}" -o json | jq -r '.data.parameters'
-#    register: _secretParametersBeforesvc_instance
-#    when: _parameterSecretName is defined
-#    changed_when: false
-
-#  - name: add pvolName to apb parameters secret
-#    shell: "echo {{ _secretParametersBefore.stdout }} | base64 --decode | jq --compact-output '. + {\"storage_UID\":\"{{ storage_UID }}\"}' | base64"
-#    register: _secretParametersAfter
-#    when: _secretParametersBefore is defined
-#    changed_when: false
-
-#  - name: update parametersSecretName
-#    shell: oc -n "{{ namespace }}" get secret "{{ _parameterSecretName.stdout }}" -o json | jq '.data.parameters = "{{ _secretParametersAfter.stdout }}"' | oc replace -f -
-#    when: _secretParametersAfter is defined
-
-#  - name: output
-#    debug:
-#      msg:
-#        - "Preparation:"
-#        - "  _apb_service_instance_id: {{ _apb_service_instance_id }}"
-#        - "  _parameterSecretName: {{ _parameterSecretName.stdout }}"
-#        - "  _secretParametersBefore: {{ _secretParametersBefore.stdout }}"
-#        - "  _secretParametersAfter : {{ _secretParametersAfter.stdout }}"
-#    when: _parameterSecretName.stdout != ""
-
   - name: "[Provision] Stage"
     include_tasks: stage.yml
 

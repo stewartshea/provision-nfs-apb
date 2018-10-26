@@ -20,6 +20,7 @@
           path: "{{ backup_storage_nfs_root }}/{{ pvol_name }}"
           server: "{{ backup_storage_nfs_server }}"
         persistentVolumeReclaimPolicy: Retain
+        storageClassName: "nfs-file"
         claimRef:
           name: "bk-{{ pvol_name }}"
           namespace: "{{ namespace }}"
