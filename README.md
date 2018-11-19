@@ -4,54 +4,21 @@ Welcome to the NFS Provision workspace.  This apb is designed to fully provision
 
 ## How to Use
 
+### Provision via GUI catalog
+
+Simply click on the "BC Gov NFS Storage" catalog item and ensure parameters are entered as needed.  You are not able to specify the name of the serviceInstance when provisioning through the GUI, one will be generated for you.
+
 ### Provision via `svcat cli`
+
+The Service Catalog CLI is a Kubernetes cli tool for interacting directly with the Service Catalog.  Using this tool will allow command-line provisioning of the NFS PVC Service Catalog item if you prefer.  
+
+- Windows - [https://download.svcat.sh/cli/latest/windows/amd64/svcat.exe]
+- linux - [https://download.svcat.sh/cli/latest/linux/amd64/svcat]
+- darwin|macos - [https://download.svcat.sh/cli/latest/darwin/amd64/svcat]
 
 ``` bash
 > svcat provision [service-instance-name] --class localregistry-backup-pvc-apb --plan default --params-json '{"rq_size":[size-in-Gb]}' -n [project-namespace]
 ```
-
-### View catalog item details
-
-``` bash
-> svcat describe plan localregistry-backup-pvc-apb/default
-  Name:          default
-  Description:   Provision an NFS backed PVC for the target project.  
-  UUID:          5131dda39f778c1a979b9b9a2effbd15
-  Status:        Active
-  Free:          true
-  Class:         localregistry-backup-pvc-apb
-
-Instances:
-                 NAME                  NAMESPACE   STATUS  
-+------------------------------------+-----------+--------+
-  localregistry-backup-pvc-apb-5lr9j   jeff-test   Ready
-
-Instance Create Parameter Schema:
-  $schema: http://json-schema.org/draft-04/schema
-  additionalProperties: false
-  properties:
-    rq_size:
-      default: 1
-      title: Backup Volume Size (Gb)
-      type: number
-  required:
-  - rq_size
-  type: object
-
-Instance Update Parameter Schema:
-  $schema: http://json-schema.org/draft-04/schema
-  additionalProperties: false
-  type: object
-
-Binding Create Parameter Schema:
-  $schema: http://json-schema.org/draft-04/schema
-  additionalProperties: false
-  type: object
-```
-
-### Provision via GUI catalog
-
-Simply click on the "BC Gov NFS Storage" catalog item and ensure parameters are entered as needed.  You cannot specify the name of the serviceInstance when provisioning through the GUI, one will be generated for you.
 
 ## Verify your PVC
 
@@ -71,5 +38,5 @@ You can tell which PVC is associated with the serviceInstance as the serviceInst
 
 ## Other Documentation
 
-- Deployment(docs/Deployment.md)
-- Secrets(docs/Secrets.md)
+- [Deployment](docs/Deployment.md)
+- [Secrets](docs/Secrets.md)
