@@ -1,0 +1,42 @@
+---
+kind: "Template"
+apiVersion: "v1"
+metadata:
+  name: "openshift-ansible-playbook-broker"
+  annotations:
+    description: "Deployment configuration for BCGov Ansible Playbook Broker"
+    iconClass: "icon-shadowman"
+    tags: "management,brokers"
+parameters:
+  - name: "BROKER_NAMESPACE"
+    displayName: "Broker Namespace"
+    description: "Name of the broker namespace"
+    value: "openshift-ansible-service-broker"
+    required: true
+  - name: "APP_LABEL"
+    displayName: "Application Label"
+    description: "Value for App label"
+    value: "nfs-backup"
+    required: true
+  - name: "NFS_BKUP_SECRET"
+    displayName: "NFS Backup Secret"
+    description: "Name of APB parameters secret"
+    value: "bkup-nfs-pv-params"
+    required: true
+  - name: "PV_PROV_SVC_ACCT"
+    displayName: "PV Provisioner Service Account"
+    description: "Service account to be used by NFS APB"
+    value: "esit-nfs-backup"
+#    value: "apb"
+    required: true
+  - name: "PV_STORAGE_CLASS"
+    displayName: "PV Storage Class"
+    description: "Storage Class to be used by NFS APB"
+    value: "nfs-backup"
+    required: true
+  - name: "PV_STORAGE_QUOTA_NAME"
+    displayName: "PV Storage Class Quota"
+    description: "Storage Class Quota to be used by NFS APB"
+    value: "storage-nfs-backup-quota"
+    required: true
+objects:

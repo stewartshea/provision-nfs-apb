@@ -1,3 +1,4 @@
 ---
 storage_admin_kubeconf: '/tmp/kubeconf_storageadmin'
 storage_unit_type: 'Gi'
+backup_nfs_storageClass: "nfs-backup"

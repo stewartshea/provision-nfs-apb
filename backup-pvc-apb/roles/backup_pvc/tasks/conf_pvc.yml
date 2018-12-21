@@ -17,6 +17,6 @@
           requests:
             storage: "{{ pvol_size }}{{ storage_unit_type }}"
         volumeName: "{{ pvol_name }}"
-        storageClassName: "nfs-file"
+        storageClassName: "{{ backup_nfs_storageClass }}"
 
 ...

@@ -1,0 +1,23 @@
+- kind: ServiceAccount
+  apiVersion: v1
+  metadata:
+    name: ${PV_PROV_SVC_ACCT}
+    namespace: ${BROKER_NAMESPACE}
+    labels:
+      app: ${APP_LABEL}
+- kind: ClusterRoleBinding
+  apiVersion: v1
+  groupNames: null
+  metadata:
+    name: system:apb-pv-provisioner
+    namespace: ${BROKER_NAMESPACE}
+    labels:
+      app: ${APP_LABEL}
+  roleRef:
+    name: cluster-admin
+  subjects:
+  - kind: ServiceAccount
+    name: ${PV_PROV_SVC_ACCT}
+  userNames:
+  - system:serviceaccount:${BROKER_NAMESPACE}:${PV_PROV_SVC_ACCT}
+

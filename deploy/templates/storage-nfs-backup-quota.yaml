@@ -1,0 +1,8 @@
+- kind: ResourceQuota
+  apiVersion: v1
+  metadata:
+    name: ${PV_STORAGE_QUOTA_NAME}
+  spec:
+    hard:
+      ${PV_STORAGE_CLASS}.storageclass.storage.k8s.io/persistentvolumeclaims: "2"
+      ${PV_STORAGE_CLASS}.storageclass.storage.k8s.io/requests.storage: 5Gi

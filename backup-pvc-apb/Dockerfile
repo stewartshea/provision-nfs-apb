@@ -49,6 +49,11 @@ bmcKIyAgICAgICAgcmVxdWlyZWQ6IHRydWUKIyAgICAgICAgZGlzcGxheV9ncm91cDogQXV0aAo="
 
 
 
+
+
+
+
+
 ENV BUNDLE_DEBUG=false
 COPY playbooks /opt/apb/actions
 COPY roles /opt/ansible/roles
