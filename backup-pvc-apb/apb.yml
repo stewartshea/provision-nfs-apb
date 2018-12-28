@@ -44,23 +44,3 @@ plans:
 # these parameters are not available.  If they are added in the user entry area they will be available
 # to the project via the apb_parameters secret.  However if they are only present in the opaque secret,
 # they are only visible via the broker namespace, or within the running apb.
-#      - name: remote_user
-#        title: SSH Remote User
-#        type: string
-#        required: true
-#        display_group: Auth
-#      - name: auth_key
-#        title: SSH Remote User Key
-#        type: string
-#        required: true
-#        display_group: Auth
-#      - name: pv_srv_acct
-#        title: Service Account for PV admin
-#        type: string
-#        required: true
-#        display_group: Auth
-#      - name: pv_srv_acct_token
-#        title: Auth Token for PV admin service account
-#        type: string
-#        required: true
-#        display_group: Auth

@@ -1,4 +1,4 @@
-FROM ansibleplaybookbundle/apb-base
+FROM ansibleplaybookbundle/apb-base:release-1.2
 
 LABEL "com.redhat.apb.spec"=\
 "dmVyc2lvbjogMS4wCm5hbWU6IGJhY2t1cC1wdmMtYXBiCmRlc2NyaXB0aW9uOiBQcm92aXNpb24g\
@@ -33,30 +33,14 @@ cmFtZXRlcnMgYXJlIG5vdCBhdmFpbGFibGUuICBJZiB0aGV5IGFyZSBhZGRlZCBpbiB0aGUgdXNl\
 ciBlbnRyeSBhcmVhIHRoZXkgd2lsbCBiZSBhdmFpbGFibGUKIyB0byB0aGUgcHJvamVjdCB2aWEg\
 dGhlIGFwYl9wYXJhbWV0ZXJzIHNlY3JldC4gIEhvd2V2ZXIgaWYgdGhleSBhcmUgb25seSBwcmVz\
 ZW50IGluIHRoZSBvcGFxdWUgc2VjcmV0LAojIHRoZXkgYXJlIG9ubHkgdmlzaWJsZSB2aWEgdGhl\
-IGJyb2tlciBuYW1lc3BhY2UsIG9yIHdpdGhpbiB0aGUgcnVubmluZyBhcGIuCiMgICAgICAtIG5h\
-bWU6IHJlbW90ZV91c2VyCiMgICAgICAgIHRpdGxlOiBTU0ggUmVtb3RlIFVzZXIKIyAgICAgICAg\
-dHlwZTogc3RyaW5nCiMgICAgICAgIHJlcXVpcmVkOiB0cnVlCiMgICAgICAgIGRpc3BsYXlfZ3Jv\
-dXA6IEF1dGgKIyAgICAgIC0gbmFtZTogYXV0aF9rZXkKIyAgICAgICAgdGl0bGU6IFNTSCBSZW1v\
-dGUgVXNlciBLZXkKIyAgICAgICAgdHlwZTogc3RyaW5nCiMgICAgICAgIHJlcXVpcmVkOiB0cnVl\
-CiMgICAgICAgIGRpc3BsYXlfZ3JvdXA6IEF1dGgKIyAgICAgIC0gbmFtZTogcHZfc3J2X2FjY3QK\
-IyAgICAgICAgdGl0bGU6IFNlcnZpY2UgQWNjb3VudCBmb3IgUFYgYWRtaW4KIyAgICAgICAgdHlw\
-ZTogc3RyaW5nCiMgICAgICAgIHJlcXVpcmVkOiB0cnVlCiMgICAgICAgIGRpc3BsYXlfZ3JvdXA6\
-IEF1dGgKIyAgICAgIC0gbmFtZTogcHZfc3J2X2FjY3RfdG9rZW4KIyAgICAgICAgdGl0bGU6IEF1\
-dGggVG9rZW4gZm9yIFBWIGFkbWluIHNlcnZpY2UgYWNjb3VudAojICAgICAgICB0eXBlOiBzdHJp\
-bmcKIyAgICAgICAgcmVxdWlyZWQ6IHRydWUKIyAgICAgICAgZGlzcGxheV9ncm91cDogQXV0aAo="
-
-
-
-
-
-
-
-
-
+IGJyb2tlciBuYW1lc3BhY2UsIG9yIHdpdGhpbiB0aGUgcnVubmluZyBhcGIuCg=="
 
 ENV BUNDLE_DEBUG=false
+RUN yum -y install jq \
+  && yum clean all
 COPY playbooks /opt/apb/actions
 COPY roles /opt/ansible/roles
-RUN echo "host_key_checking = False" >> /opt/apb/.ansible.cfg
+COPY entrypoint.sh /usr/bin/entrypoint.sh
+RUN echo "host_key_checking = False" >> /opt/apb/ansible.cfg
 RUN chmod -R g=u /opt/{ansible,apb}
 USER apb
