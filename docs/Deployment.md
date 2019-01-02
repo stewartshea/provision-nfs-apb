@@ -10,33 +10,13 @@ Local package requirements:
 
 `oc login` (as user with cluster-admin)
 
-`oc get route docker-registry -n default`
-
-`export OSC_DOCKER_REG=docker-registry.lab.pathfinder.gov.bc.ca`
-
-confirm /etc/containers/registries.conf has insecure route (if needed)
-
-- add to [registries.insecure] section:
-  `registries = [${OSC_DOCKER_REG}]`
-
-This apb was created with "apb init", and can be pushed via the following (from within the backup-pvc-apb folder):
+Create a build config to handle building of the image, then tag it over to the main openshift project:
 
 ``` bash
-apb prepare
-apb build --tag ${OSC_DOCKER_REG}/openshift/backup-pvc-apb
-apb push --registry-route ${OSC_DOCKER_REG}
-```
-
-If the push shows an error at the bootstrap step, run the following to bootstrap the broker and sync the catalog (instead of waiting for the timed bootstrap and sync)
-
-``` bash
-    Get name of route:
-    oc get route -n openshift-ansible-service-broker
-    curl -H "Authorization: Bearer $(oc whoami -t)" -k -X POST \
-    https://<name_of_route>/ansible-service-broker/v2/bootstrap
-
-    wait for bootstrap to complete, and then sync(relist) the catalog
-    svcat sync broker ansible-service-broker
+oc new-build https://github.com/BCDevOps/provision-nfs-apb.git --context-dir=backup-pvc-apb \
+  --strategy=docker --name=backup-pvc-apb
+oc logs -f bc/backup-pvc-apb
+oc tag openshift-ansible-service-broker/backup-pvc-apb:latest openshift/backup-pvc-apb:latest
 ```
 
 ## Update openshift-ansible-service-broker
