@@ -1,4 +1,4 @@
-FROM openshift3/apb-base:v3.10
+FROM registry.access.redhat.com/openshift3/apb-base:v3.10
 
 LABEL "com.redhat.apb.spec"=\
 "dmVyc2lvbjogMS4wCm5hbWU6IGJhY2t1cC1wdmMtYXBiCmRlc2NyaXB0aW9uOiBQcm92aXNpb24g\
