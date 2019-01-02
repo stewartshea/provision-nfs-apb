@@ -36,7 +36,8 @@ ZW50IGluIHRoZSBvcGFxdWUgc2VjcmV0LAojIHRoZXkgYXJlIG9ubHkgdmlzaWJsZSB2aWEgdGhl\
 IGJyb2tlciBuYW1lc3BhY2UsIG9yIHdpdGhpbiB0aGUgcnVubmluZyBhcGIuCg=="
 
 ENV BUNDLE_DEBUG=false
-RUN yum -y install jq \
+RUN  yum -y install epel-release \
+  && yum -y install jq \
   && yum clean all
 COPY playbooks /opt/apb/actions
 COPY roles /opt/ansible/roles
