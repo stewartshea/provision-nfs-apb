@@ -19,6 +19,17 @@ oc logs -f bc/backup-pvc-apb
 oc tag openshift-ansible-service-broker/backup-pvc-apb:latest openshift/backup-pvc-apb:latest
 ```
 
+Run the following to bootstrap the broker and sync the catalog (instead of waiting for the timed bootstrap and sync)
+
+``` bash
+    oc get route -n openshift-ansible-service-broker
+    curl -H "Authorization: Bearer $(oc whoami -t)" -k -X POST \
+    https://$(oc get route -n openshift-ansible-service-broker | grep asb | awk -f '{print $2}')/ansible-service-broker/v2/bootstrap
+
+    wait for bootstrap to complete, and then sync(relist) the catalog
+    svcat sync broker ansible-service-broker
+```
+
 ## Update openshift-ansible-service-broker
 
 ### Deploy openshift-ansible-service-broker and cluster objects
