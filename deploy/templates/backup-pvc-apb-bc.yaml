@@ -1,0 +1,68 @@
+---
+kind: Template
+apiVersion: v1
+metadata:
+  name: apb-builder
+  creationTimestamp:
+objects:
+- kind: ImageStream
+  apiVersion: v1
+  metadata:
+    name: "${NAME}"
+- kind: BuildConfig
+  apiVersion: v1
+  metadata:
+    name: "${NAME}"
+    namespace: openshift
+    creationTimestamp:
+    labels:
+      app: "${NAME}"
+      build: "${NAME}"
+  spec:
+    failedBuildsHistoryLimit: 1
+    successfulBuildsHistoryLimit: 2
+    runPolicy: Serial
+    source:
+      type: Git
+      git:
+        ref: "${GIT_REF}"
+        uri: "${GIT_REPO_URL}"
+      contextDir: "${SOURCE_CONTEXT_DIR}"
+    strategy:
+      dockerStrategy:
+      type: Docker
+    output:
+      to:
+        kind: ImageStreamTag
+        name: "${NAME}:${OUTPUT_IMAGE_TAG}"
+    resources: {}
+    postCommit: {}
+  status:
+    lastVersion: 0
+parameters:
+- name: NAME
+  displayName: Name
+  description: The name assigned to all of the frontend objects defined in this template.  You
+    should keep this as default unless your know what your doing.
+  required: true
+  value: backup-pvc-apb
+- name: GIT_REPO_URL
+  displayName: Git Repo URL
+  description: The URL to the GIT repo.
+  required: true
+  value: https://github.com/BCDevOps/provision-nfs-apb/
+- name: GIT_REF
+  displayName: Git Reference
+  description: The git reference or branch.
+  required: true
+  value: master
+- name: SOURCE_CONTEXT_DIR
+  displayName: Source Context Directory
+  description: The source context directory.
+  required: true
+  value: /backup-pvc-apb
+- name: OUTPUT_IMAGE_TAG
+  displayName: Output Image Tag
+  description: The tag given to the built image.
+  required: true
+  value: latest

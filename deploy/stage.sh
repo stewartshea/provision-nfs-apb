@@ -32,3 +32,19 @@ cat templates/parameters.yaml templates/nfs-backup-storageClass.yaml | ${OC} pro
 echo ""
 echo "Create or replace broker-config"
 cat templates/parameters.yaml templates/broker-config.yaml | ${OC} process -f - | ${OC} apply -f -
+
+echo ""
+echo "Creating BuildConfig in openshift project"
+cat templates/backup-pvc-apb-bc.yaml | ${OC} process -f - | ${OC} apply -f -
+
+echo "Trigger build with the following when ready:"
+echo "${OC} start-build --from-build=backup-pvc-apb"
+
+echo ""
+echo "Once build completes and broker has been configured, run the following to bootstrap the broker:"
+echo "curl -H \"Authorization: Bearer \$(oc whoami -t)\" -k -X POST \\"
+echo " https://\$(oc get route -n openshift-ansible-service-broker | grep asb | awk -f '{print $2}')/ansible-service-broker/v2/bootstrap"
+
+echo ""
+echo "Run the following to sync the Service Catalog:"
+echo "svcat sync ansible-service-broker"
