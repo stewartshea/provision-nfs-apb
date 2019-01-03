@@ -16,7 +16,7 @@ Create a build config to handle building of the image, then tag it over to the m
 oc new-build https://github.com/BCDevOps/provision-nfs-apb.git --context-dir=backup-pvc-apb \
   --strategy=docker --name=backup-pvc-apb
 oc logs -f bc/backup-pvc-apb
-oc tag openshift-ansible-service-broker/backup-pvc-apb:latest openshift/backup-pvc-apb:latest
+oc tag advsol-ops/backup-pvc-apb:latest openshift/backup-pvc-apb:latest
 ```
 
 Run the following to bootstrap the broker and sync the catalog (instead of waiting for the timed bootstrap and sync)
