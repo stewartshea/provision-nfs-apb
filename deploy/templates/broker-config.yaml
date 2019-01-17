@@ -11,13 +11,16 @@ objects:
       registry:
         - type: rhcc
           name: rh
-          url:  https://registry.access.redhat.com
-          org:  
-          tag:  v3.10.72
+          url:  https://registry.redhat.io
+          org:
+          tag:  v3.11.59
           white_list: [.*-apb$]
-  
-          auth_type: ""
-          auth_name: ""
+
+          black_list: [.*automation-broker-apb$]
+
+          auth_type: "secret"
+          auth_name: "asb-registry-auth"
+
         - type: local_openshift
           name: localregistry
           namespaces: ['openshift']
@@ -37,7 +40,7 @@ objects:
         sandbox_role: edit
         image_pull_policy: Always
         keep_namespace: false
-        keep_namespace_on_error: true
+        keep_namespace_on_error: false
       broker:
         dev_broker: false
         bootstrap_on_startup: true
