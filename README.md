@@ -6,7 +6,9 @@ Welcome to the NFS Provision workspace.  This apb is designed to fully provision
 
 ### Provision via GUI catalog
 
-Simply click on the "BC Gov NFS Storage" catalog item and ensure parameters are entered as needed.  You are not able to specify the name of the serviceInstance when provisioning through the GUI, one will be generated for you.
+The backup volume (via NFS) is not provisioned in the same way that the gluster-file and gluster-block is provisioned.  Instead of provisioning via a claim request, you will order an NFS Volume as a catalog item.  You are not able to specify the name of the final PVC, one will be generated for you.
+
+[Catalog Ordering (GUI)](docs/usage-gui.md)
 
 ### Provision via `svcat cli`
 
