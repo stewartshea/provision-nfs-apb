@@ -31,7 +31,8 @@ cat templates/parameters.yaml templates/nfs-backup-storageClass.yaml | ${OC} pro
 
 echo ""
 echo "Create or replace broker-config"
-cat templates/parameters.yaml templates/broker-config.yaml | ${OC} process -f - | ${OC} apply -f -
+#cat templates/parameters.yaml templates/broker-config.yaml | ${OC} process -f - | ${OC} apply -f -
+${OC} create cm broker-config --from-file=broker-config=./broker-config -o yaml --dry-run=true | ${OC} apply -f -
 
 echo ""
 echo "Creating BuildConfig in openshift project"
