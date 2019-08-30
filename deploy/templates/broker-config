@@ -11,7 +11,7 @@ registry:
   - type: local_openshift
     name: localregistry
     white_list: [.*-apb$]
-    namespaces: [u'openshift']
+    namespaces: [openshift]
 dao:
   type: crd
 log:
