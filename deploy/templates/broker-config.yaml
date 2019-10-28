@@ -13,7 +13,7 @@ objects:
           name: rh
           url:  https://registry.redhat.io
           org:
-          tag:  v3.11.59
+          tag:  v3.11.135
           white_list: [.*-apb$]
 
           black_list: [.*automation-broker-apb$]
