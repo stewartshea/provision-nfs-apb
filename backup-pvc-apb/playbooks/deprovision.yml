@@ -8,6 +8,10 @@
     install_python_requirements: no
   - role: ansibleplaybookbundle.asb-modules
   tasks:
+ # Add Pause for Aporeto Debug
+  - name: Add 30 second pause for Aporeto PU identification
+    pause:
+      seconds: 30
   - name: "[Deprovision] Prep Parameters"
     set_fact:
       secret_mnt: "/etc/apb-secrets/apb-bkup-nfs-pv-params"
