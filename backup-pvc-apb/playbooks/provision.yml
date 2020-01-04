@@ -4,6 +4,10 @@
   gather_facts: false
   connection: local
   tasks:
+  # Add Pause for Aporeto Debug
+  - name: Add 30 second pause for Aporeto PU identification
+    pause:
+      seconds: 30
   - name: Create unique storage ID
     set_fact:
       storage_UID: "{{ lookup('password', '/dev/null length=12 chars=ascii_lowercase,digits') }}"
