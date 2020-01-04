@@ -1,3 +1,7 @@
+# Add Pause for Aporeto Debug
+- name: Add 30 second pause for Aporeto PU identification
+  pause:
+    seconds: 30
 ##################################################################################
 # Stage facts and remote connection access.
 #
