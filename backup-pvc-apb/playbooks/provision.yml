@@ -1,7 +1,4 @@
 ---
-# Add Pause for Aporeto Debug
-- pause:
-    seconds: 60
 - name: Prep for Remote Provision
   hosts: localhost
   gather_facts: false
