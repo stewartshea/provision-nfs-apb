@@ -1,8 +1,4 @@
 ---
-# Add Delay for Aporeto Debugging
-- pause:
-    seconds: 60
-  
 - name: Provisioning action
   include: provision.yml
   when: mode == 'provision'
